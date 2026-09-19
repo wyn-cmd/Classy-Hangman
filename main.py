@@ -78,7 +78,10 @@ game = Hangman(word_list, max_attempts=6)
 while not game.is_game_over():
     print(game.get_masked_word())
     print(f"Attempts left: {game.get_attempts_left()}")
-    letter = input("Enter a letter: ")
+    letter = input("Enter a letter: ").strip()
+    if len(letter) != 1 or not letter.isalpha():
+        print("Enter a single letter.")
+        continue
     game.guess_letter(letter)
 
 # Print the game result
