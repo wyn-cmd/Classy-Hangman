@@ -3,13 +3,13 @@ import random
 
 class Hangman:
     def __init__(self, word_list, max_attempts):
-        self.__word = random.choice(word_list).lower()  # Select a random word from word_list
+        self.__word = random.choice(word_list).lower()
         self.__max_attempts = max_attempts
         self.__attempts_left = max_attempts
         self.__guessed_letters = set()
     
     def guess_letter(self, letter):
-        letter = letter.lower()  # Convert input to lowercase
+        letter = letter.lower()
         if letter in self.__guessed_letters:
             print(f"You've already guessed '{letter}'. Guess another letter.")
             return
@@ -25,67 +25,52 @@ class Hangman:
     def is_game_over(self):
         if self.__attempts_left <= 0:
             return True
-        if all(letter in self.__guessed_letters for letter in self.__word):
-            return True
-        return False
+        return all(letter in self.__guessed_letters for letter in self.__word)
     
     def get_masked_word(self):
-        masked_word = ""
-        for char in self.__word:
-            if char in self.__guessed_letters:
-                masked_word += char
-            else:
-                masked_word += "_"
-        return masked_word
+        return "".join(
+            char if char in self.__guessed_letters else "_" 
+            for char in self.__word
+        )
     
     def get_attempts_left(self):
         return self.__attempts_left
 
 
-
 def get_words_from_csv(file_path, column_index):
-  """
-  Extracts a list of words from a specified column in a CSV file.
+    """Extracts a list of words from a specified column in a CSV file."""
+    words = []
+    try:
+        with open(file_path, 'r', encoding='utf-8') as csvfile:
+            csvreader = csv.reader(csvfile)
+            for row in csvreader:
+                if len(row) > column_index:
+                    words.extend(row[column_index].split())
+    except FileNotFoundError:
+        print(f"Warning: Could not find file {file_path}. Using fallback word list.")
+    
+    return words
 
-  Args:
-    file_path: The path to the CSV file.
-    column_index: The index of the column containing the words (0-based).
+if __name__ == "__main__":
+    file_path = 'word_list.txt'
+    column_index = 2
+    word_list = get_words_from_csv(file_path, column_index)
+    
+    if not word_list:
+        word_list = ["python", "programming", "cyber"]
 
-  Returns:
-    A list of words extracted from the specified column.
-  """
+    game = Hangman(word_list, max_attempts=6)
 
-  words = []
-  with open(file_path, 'r') as csvfile:
-    csvreader = csv.reader(csvfile)
-    for row in csvreader:
-      words.extend(row[column_index].split())  # Assuming words are separated by spaces
+    while not game.is_game_over():
+        print(game.get_masked_word())
+        print(f"Attempts left: {game.get_attempts_left()}")
+        letter = input("Enter a letter: ").strip()
+        if len(letter) != 1 or not letter.isalpha():
+            print("Enter a single letter.")
+            continue
+        game.guess_letter(letter)
 
-  return words
-
-# Example usage:
-file_path = 'word_list.txt'
-column_index = 2  # Adjust based on your column containing words
-word_list = get_words_from_csv(file_path, column_index)
-print(word_list)
-
-
-# Create an instance of the Hangman class
-word_list = ["python", "programming", "cyber"]
-game = Hangman(word_list, max_attempts=6)
-
-# Play the game
-while not game.is_game_over():
-    print(game.get_masked_word())
-    print(f"Attempts left: {game.get_attempts_left()}")
-    letter = input("Enter a letter: ").strip()
-    if len(letter) != 1 or not letter.isalpha():
-        print("Enter a single letter.")
-        continue
-    game.guess_letter(letter)
-
-# Print the game result
-if game.get_attempts_left() > 0:
-    print("Congratulations! You guessed the word correctly.")
-else:
-    print("Game over! You ran out of attempts.")
+    if game.get_attempts_left() > 0:
+        print("Congratulations! You guessed the word correctly.")
+    else:
+        print("Game over! You ran out of attempts.")
