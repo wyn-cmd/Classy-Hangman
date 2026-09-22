@@ -23,9 +23,7 @@ class Hangman:
             self.__attempts_left -= 1
     
     def is_game_over(self):
-        if self.__attempts_left <= 0:
-            return True
-        return all(letter in self.__guessed_letters for letter in self.__word)
+        return self.__attempts_left <= 0 or all(letter in self.__guessed_letters for letter in self.__word)
     
     def get_masked_word(self):
         return "".join(
@@ -39,25 +37,23 @@ class Hangman:
 
 def get_words_from_csv(file_path, column_index):
     """Extracts a list of words from a specified column in a CSV file."""
-    words = []
     try:
         with open(file_path, 'r', encoding='utf-8') as csvfile:
             csvreader = csv.reader(csvfile)
-            for row in csvreader:
-                if len(row) > column_index:
-                    words.extend(row[column_index].split())
+            return [
+                word 
+                for row in csvreader 
+                if len(row) > column_index 
+                for word in row[column_index].split()
+            ]
     except FileNotFoundError:
         print(f"Warning: Could not find file {file_path}. Using fallback word list.")
-    
-    return words
+        return []
 
 if __name__ == "__main__":
     file_path = 'word_list.txt'
     column_index = 2
-    word_list = get_words_from_csv(file_path, column_index)
-    
-    if not word_list:
-        word_list = ["python", "programming", "cyber"]
+    word_list = get_words_from_csv(file_path, column_index) or ["python", "programming", "cyber"]
 
     game = Hangman(word_list, max_attempts=6)
 
