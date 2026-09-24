@@ -1,3 +1,5 @@
+# Hangman game implementation using standard library tools
+
 import csv
 import random
 
@@ -35,19 +37,22 @@ class Hangman:
         return self.__attempts_left
 
 
+# Extracts a list of words from a specified column in a CSV file.
 def get_words_from_csv(file_path, column_index):
-    """Extracts a list of words from a specified column in a CSV file."""
     try:
         with open(file_path, 'r', encoding='utf-8') as csvfile:
             csvreader = csv.reader(csvfile)
-            return [
-                word 
-                for row in csvreader 
-                if len(row) > column_index 
-                for word in row[column_index].split()
-            ]
+            words = []
+            for row in csvreader:
+                if len(row) > column_index:
+                    for word in row[column_index].split():
+                        words.append(word)
+            return words
     except FileNotFoundError:
         print(f"Warning: Could not find file {file_path}. Using fallback word list.")
+        return []
+    except Exception as e:
+        print(f"Error reading file {file_path}: {e}. Using fallback word list.")
         return []
 
 if __name__ == "__main__":
@@ -60,13 +65,21 @@ if __name__ == "__main__":
     while not game.is_game_over():
         print(game.get_masked_word())
         print(f"Attempts left: {game.get_attempts_left()}")
-        letter = input("Enter a letter: ").strip()
+        
+        try:
+            letter = input("Enter a letter: ").strip()
+        except (KeyboardInterrupt, EOFError):
+            print("\nGame interrupted. Exiting.")
+            break
+            
         if len(letter) != 1 or not letter.isalpha():
             print("Enter a single letter.")
             continue
         game.guess_letter(letter)
 
-    if game.get_attempts_left() > 0:
-        print("Congratulations! You guessed the word correctly.")
-    else:
-        print("Game over! You ran out of attempts.")
+    if game.is_game_over():
+        print(f"The word was: {game._Hangman__word}")
+        if game.get_attempts_left() > 0:
+            print("Congratulations! You guessed the word correctly.")
+        else:
+            print("Game over! You ran out of attempts.")
