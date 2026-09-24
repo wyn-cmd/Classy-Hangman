@@ -3,6 +3,7 @@
 import csv
 import random
 
+# Core game logic for Hangman
 class Hangman:
     def __init__(self, word_list, max_attempts):
         self.__word = random.choice(word_list).lower()
@@ -35,6 +36,9 @@ class Hangman:
     
     def get_attempts_left(self):
         return self.__attempts_left
+    
+    def get_word(self):
+        return self.__word
 
 
 # Extracts a list of words from a specified column in a CSV file.
@@ -54,6 +58,7 @@ def get_words_from_csv(file_path, column_index):
     except Exception as e:
         print(f"Error reading file {file_path}: {e}. Using fallback word list.")
         return []
+
 
 if __name__ == "__main__":
     file_path = 'word_list.txt'
@@ -78,7 +83,7 @@ if __name__ == "__main__":
         game.guess_letter(letter)
 
     if game.is_game_over():
-        print(f"The word was: {game._Hangman__word}")
+        print(f"The word was: {game.get_word()}")
         if game.get_attempts_left() > 0:
             print("Congratulations! You guessed the word correctly.")
         else:
